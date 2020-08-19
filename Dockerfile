@@ -1,52 +1,17 @@
-# Thanks https://blog.xmatthias.com/compiling-python-3-6-for-centos-5-11-with-openssl/
-# for the major part of this Dockerfile
-FROM centos:5
+FROM teruyaramone/pyinstaller-many-linux:python27
 
-ARG PYINSTALLER_VERSION=3.4
-ARG PYTHON_VERSION=2.7
+COPY ./instantclient_12_2.tgz/. /opt/instantclient_12_2.tgz
 
-# As centos5 has reached end of life, some manipulation are needed
-# to get "yum" behave as expected in the container
-RUN mkdir /var/cache/yum/base/ \
-    && mkdir /var/cache/yum/extras/ \
-    && mkdir /var/cache/yum/updates/ \
-    && mkdir /var/cache/yum/libselinux/ \
-    && echo "http://vault.centos.org/5.11/os/x86_64/" > /var/cache/yum/base/mirrorlist.txt \
-    && echo "http://vault.centos.org/5.11/extras/x86_64/" > /var/cache/yum/extras/mirrorlist.txt \
-    && echo "http://vault.centos.org/5.11/updates/x86_64/" > /var/cache/yum/updates/mirrorlist.txt \
-    && echo "http://vault.centos.org/5.11/centosplus/x86_64/" > /var/cache/yum/libselinux/mirrorlist.txt
+RUN cd /opt \
+    && tar -xvf instantclient_12_2.tgz
 
-# Installing dependencies
-RUN yum install -y gcc gcc44 zlib-devel python-setuptools readline-devel wget make perl sqlite-devel
+ENV ORACLE_HOME=/opt/instantclient_12_2/
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ORACLE_HOME:/opt/python2.7/lib/
+ENV VERSION=12.2.0.1.0
+ENV ARCH=x86_64
+ENV PKG_CONFIG_PATH=$ORACLE_HOME
+ENV TNS_ADMIN=$ORACLE_HOME/network/admin
+ENV PATH=$ORACLE_HOME:$PATH:/opt/python2.7/lib/
+ENV LD_RUN_PATH=$ORACLE_HOME
 
-# build and install openssl
-RUN cd /tmp && wget https://www.openssl.org/source/openssl-1.0.2l.tar.gz \
-    && tar xzvpf openssl-1.0.2l.tar.gz && cd openssl-1.0.2l \
-    && ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl \
-    && sed -i.orig '/^CFLAG/s/$/ -fPIC/' Makefile \
-    && make && make test && make install
-
-# or you can use "wget https://www.python.org/ftp/python/3.6.8/Python-3.6.8.tgz" here
-# but it didnt work for me, so we need to use already downloaded one
-COPY ./python-for-docker/Python-2.7.6.tgz /tmp/
-COPY entrypoint.sh /entrypoint.sh
-
-# build and install python${PYTHON_VERSION}
-RUN tar xzvf /tmp/Python-2.7.6.tgz && cd Python-2.7.6 \
-    && ./configure --prefix=/opt/python${PYTHON_VERSION} --enable-shared --with-threads && make altinstall \
-    && ln -s /opt/python${PYTHON_VERSION}/bin/python${PYTHON_VERSION} /usr/local/bin/python${PYTHON_VERSION} \
-    && ln -s /opt/python${PYTHON_VERSION}/bin/pip${PYTHON_VERSION} /usr/local/bin/pip${PYTHON_VERSION}
-
-ENV LD_LIBRARY_PATH=/opt/python${PYTHON_VERSION}/lib
-
-COPY get-pip.py /opt/python${PYTHON_VERSION}/bin/
-
-RUN /usr/local/bin/python${PYTHON_VERSION} /opt/python${PYTHON_VERSION}/bin/get-pip.py
-
-RUN  /usr/local/bin/pip${PYTHON_VERSION} install pyinstaller==$PYINSTALLER_VERSION \
-    && rm -rf /tmp/ && chmod +x /entrypoint.sh
-
-RUN mkdir /code
-WORKDIR /code
-
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENV LDFLAGS="-L/opt/python2.7/lib"
