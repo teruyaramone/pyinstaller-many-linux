@@ -1,4 +1,4 @@
-FROM teruyaramone/pyinstaller-many-linux:python27
+FROM teruyaramone/pyinstaller-many-linux:python3.6
 
 COPY ./instantclient_12_2.tgz/. /opt/instantclient_12_2.tgz
 
@@ -14,4 +14,4 @@ ENV TNS_ADMIN=$ORACLE_HOME/network/admin
 ENV PATH=$ORACLE_HOME:$PATH:/opt/python2.7/lib/
 ENV LD_RUN_PATH=$ORACLE_HOME
 
-ENV LDFLAGS="-L/opt/python2.7/lib"
+ENV LDFLAGS="-L/opt/python3.6/lib"
