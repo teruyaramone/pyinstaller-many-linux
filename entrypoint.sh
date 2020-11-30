@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PYTHON_VERSION=2.7
+PYTHON_VERSION=3.6
 
 if [[ -f requirements.txt ]]; then
 	echo Instalando PIPINSTALL
