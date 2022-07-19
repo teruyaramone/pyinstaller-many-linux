@@ -1,4 +1,4 @@
-FROM teruyaramone/pyinstaller-many-linux:python27
+FROM teruyaramone/pyinstaller-many-linux:python3.6
 
 COPY entrypoint-flask.sh /entrypoint.sh
 
