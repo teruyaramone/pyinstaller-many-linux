@@ -1,4 +1,4 @@
-FROM teruyaramone/pyinstaller-many-linux:python27
+FROM teruyaramone/pyinstaller-many-linux:python3.6
 
 COPY entrypoint-schedule.sh /entrypoint.sh
 
